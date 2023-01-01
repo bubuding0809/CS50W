@@ -1,0 +1,114 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+<div class="container">
+    <!-- New Post form -->
+    {% if user.is_authenticated %}
+    <div class="card mt-3">
+
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="posts-tab" data-mdb-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected="true">
+                        New post
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="images-tab" data-mdb-toggle="tab" role="tab" aria-controls="images" aria-selected="false" href="#images">Images</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <form action="{% url 'new-post' %}" id="new-post-form" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+                        <div class="form-group">
+                            <label class="sr-only" for="message">post</label>
+                            <textarea required name="text-content" class="form-control" id="message" rows="3" placeholder="What are you thinking?"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
+                        <div class="form-group mb-5">
+                            {{ postForm }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-toolbar justify-content-between mt-4">
+                    <div class="btn-group">
+                        <input type="submit" class="btn btn-primary" value="share">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <!-- Posts go here -->
+    <div id="posts-view">
+        {% for post in page_obj %}
+        <div class="post-main d-flex mb-3 border rounded-6 p-3 bg-light" id="post-{{ post.id }}">
+            <img class="profile-image me-3 rounded-circle" src="{{ post.user.user_img.url }}" alt="{{ post.user }}">
+            <div class="post-body">
+                <a href="{% url 'profile' post.user.id %}"><h5 class="fw-bold">
+                    {{ post.user.username }}
+                    <small class="text-muted">{{ post.get_time_diff }}</small>
+                </h5></a>
+                <p style="white-space: pre-line;" id="post-content-{{ post.id }}">{{ post.text_content }}</p>
+
+                {% for media in post.media.all %}
+                    <img class="fluid img-thumbnail rounded my-2" src="{{ MEDIA_URL }}{{ media }}" alt="media item">
+                {% endfor %}
+                <div class="post-footer">
+                    <span id="liked-id-{{ post.id }}"><strong>{{ post.liked_users.count }}</strong></span>
+                    {% if user.is_authenticated %}
+                        <button class="like-btn ms-2 btn btn-primary" data-id="{{ post.id }}">like</button>
+                        {% if post.user == user %}
+                            <button class="edit-btn btn btn-secondary" data-id="{{ post.id }}">edit</button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <!--Pagination goes here-->
+    <nav>
+        <ul class="pagination pagination-circle justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; first</a>
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="">previous</a>
+            {% endif %}
+                </li>
+            <li class="page-item active" aria-current="page">
+                <a class="page-link" href="#"> {{page_obj.number}} <span class="visually-hidden">(current)</span></a>
+            </li>
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="">next</a>
+            {% endif %}
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script type="module" src="{% static 'network/index.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<main class="container-fluid px-3">
+    <h2>{{ user.username }}'s watchlist</h2>
+    
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-2">
+        {% for auction in auctions %}
+            <div class="col mb-2">
+                <div class="card h-100 hover-shadow-effect">
+
+                    <!--Card header-->
+                    <div class="card-header bg-white">
+                        {{auction.user}}
+                        <div>
+                            {{auction.get_time_diff}}
+                        </div>
+                    </div>
+
+                    <!--Image Carousell-->
+                    <div id="{{ auction.get_id_string }}" class="carousel slide p-2" data-bs-ride="carousel">
+            
+                        <!--Slide indicators-->
+                        <div class="carousel-indicators">
+                            {% for image in auction.images.all %}
+                                {% if forloop.first %}
+                                    <button type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 0"></button>
+                                {% else %}
+                                    <button type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide-to="{{ forloop.counter0 }}" aria-label="Slide {{ forloop.counter }}"></button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+            
+                        <!--Carousell images-->
+                        <div class="carousel-inner">
+                            {% for image in auction.images.all %}
+                                {% if forloop.first %}
+                                <div class="carousel-item active card-img-top ratio ratio-1x1" data-bs-interval="10000">
+                                    <img src="{{ MEDIA_URL }}{{ auction.images.first.image_file }}" class="d-block w-100 card-img-top rounded" alt="Auction Image">
+                                </div>
+                                {% else %}
+                                <div class="carousel-item ratio ratio-1x1" data-bs-interval="10000">
+                                    <img src="{{ MEDIA_URL }}{{ image.image_file }}" class="d-block w-100 card-img-top rounded" alt="Auction Image">
+                                </div>
+                                {% endif %}
+                            {% empty %}
+                                <div class="carousel-item active ratio ratio-1x1">
+                                    <img src="/media/images/No_image_available.svg.png" class="d-block w-100 card-img-top rounded" alt="Auction Image">
+                                </div>
+                            {% endfor %}
+                        </div>
+            
+                        <!--left and right buttons-->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>           
+                    
+                    <!--Card body-->
+                    <div class="card-body" style="transform: rotate(0);">
+                        <h6 class="card-title">{{auction.title}}</h6>
+                        <h4 class="card-text">S${{auction.price}}</h4>
+                        <p class="text-muted">{{auction.get_condition_display}}</p>
+                        <p class="card-text">{{auction.description}}</p>
+                        <a href="{% url 'listing' auction.id %}" class="stretched-link"></a>
+                    </div>
+            
+                    <!--Card footer-->
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <small class="text-muted">{{ auction.get_category_display }}</small>
+                        <form action="{% url 'add_to_watchlist' auction.id 'watchlist' %}" method="post">{% csrf_token %}
+                            <button type="submit">
+                                {% if user in auction.liked_user.all %}
+                                    <i class="bi bi-bookmark-check-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-bookmark-heart"></i>
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                No Auctions
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

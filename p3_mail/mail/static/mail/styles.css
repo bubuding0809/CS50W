@@ -1,0 +1,12 @@
+textarea {
+    min-height: 400px;
+}
+
+#email-item:hover {
+    box-shadow: 0px 2px 10px;
+    cursor: pointer
+}
+
+#archive-button:hover {
+    zoom: 120%;
+}

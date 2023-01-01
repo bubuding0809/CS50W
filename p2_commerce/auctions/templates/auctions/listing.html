@@ -1,0 +1,176 @@
+{% extends "auctions/layout.html" %}
+{% block body %}
+<main>
+    <!--Alert banner-->
+    {% if not auction.is_open %}
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+        <i class="bi flex-strink-0 me-2 bi-cloud-drizzle-fill"></i>
+        <div>
+            Sorry this auction has been closed. Sold to <strong>{{ bids.0.user }}</strong> for S${{ bids.0 }}.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    {%  endif %}
+
+    <div class="container pt-3">
+        <div class="d-flex justify-content-around">
+            <!--Image Carousell-->
+
+            <div id="{{ auction.get_id_string }}" class="carousel slide w-50 w-sm-100 bg-dark rounded" data-bs-ride="carousel">
+        
+                <!--Slide indicators-->
+                <div class="carousel-indicators">
+                    {% for image in auction.images.all %}
+                        {% if forloop.first %}
+                            <button type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 0"></button>
+                        {% else %}
+                            <button type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide-to="{{ forloop.counter0 }}" aria-label="Slide {{ forloop.counter }}"></button>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+        
+                <!--Carousell images-->
+                <div class="carousel-inner">
+                    {% for image in auction.images.all %}
+                        {% if forloop.first %}
+                        <div class="carousel-item active ratio ratio-1x1" data-bs-interval="10000">
+                            <img src="{{ MEDIA_URL }}{{ auction.images.first.image_file }}" class="d-block w-100 img-fit-contain rounded" alt="Auction Image">
+                        </div>
+                        {% else %}
+                        <div class="carousel-item ratio ratio-1x1" data-bs-interval="10000">
+                            <img src="{{ MEDIA_URL }}{{ image.image_file }}" class="d-block w-100 img-fit-contain" alt="Auction Image">
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="carousel-item active ratio ratio-1x1">
+                            <img src="/media/images/No_image_available.svg.png" class="d-block w-100" alt="Auction Image">
+                        </div>
+                    {% endfor %}
+                </div>
+        
+                <!--left and right buttons-->
+                <button class="carousel-control-prev" type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#{{ auction.get_id_string }}" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>      
+
+            <!--Main detail section-->
+            <div class="border border-secondary rounded p-3">
+
+                <!--Details-->
+                <div>
+                    <p>By: {{ auction.user }}</p>
+                    <h1>{{ auction.title }}</h1>
+                    <h3>{{ auction.price }}</h3>
+                    <div>{{ auction.description}}</div>
+                    <div>{{ auction.details }}</div>
+                    <div>Catergory: {{ auction.get_category_display }}</div>
+                    <div class="text-muted">Condition: {{ auction.get_condition_display }}</div>
+                    <div>last updated on: {{ auction.date_modified.date }}</div>
+                </div>
+
+                <hr>
+
+                <!--Bid-->
+                <div>
+                    {% if auction.is_open %}
+                        <form action="{% url 'bid' auction.id %}" method="post">{% csrf_token %}
+                            {{ bidForm }}
+                            <input class="btn btn-primary" type="submit" value="bid">
+                        </form>
+                    {% else %}
+                        Item sold for {{ auction.price }}
+                    {% endif %}
+                    <ul>
+                        {% for bid in bids %}
+                        <li>
+                            <strong>{{bid.user}}</strong>: S${{ bid }}
+                        </li>
+                        {% empty %}
+                            No Bids
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!--Watchlist button -->
+                <form action="{% url 'add_to_watchlist' auction.id 'listing' %}" method="post">{% csrf_token %}
+                    <button type="submit">
+                        {% if user in auction.liked_user.all %}
+                            <i class="bi bi-bookmark-check-fill"></i>
+                        {% else %}
+                            <i class="bi bi-bookmark-heart"></i>
+                        {% endif %}
+                    </button>
+                </form>
+
+                <!--Close/Open bid button-->
+                {% if user == auction.user %}
+                    <form action="{% url 'change_status' auction.id %}" method="post">{% csrf_token %}
+                        <button type="submit">
+                            {% if auction.is_open %}
+                                Close Listing
+                            {% else %}
+                                Open Listing
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <hr>
+
+        <!--Comments section-->
+        <div class="container">
+
+            <!--New Comment-->
+            <div class="d-flex align-items-center">
+                {% if user.profile_image %}
+                   <img class="rounded-circle" src="{{ MEDIA_URL }}{{ user.profile_image }}" alt="Profile Image" width="50px">
+                {% else %}
+                    <img class="rounded-circle" src="{{ MEDIA_URL }}images/No_image_available.svg.png" alt="No Available Image" width="50px">
+                {% endif %}
+                <form class="flex-fill" action="{% url 'comment' auction.id %}" method="post">{% csrf_token %}
+                    <div class="input-group p-3">
+                        {{commentForm}}
+                        <input class="btn btn-primary" type="submit" value="submit comment">
+                    </div>
+                </form>
+            </div>
+
+            <!--List of comments-->
+            {% for comment in comments %}
+                <div class="d-flex align-items-center py-2">
+                    <div class="flex-shrink-0">
+                        {% if comment.user.profile_image %}
+                            <img class="rounded-circle" src="{{ MEDIA_URL }}{{ comment.user.profile_image }}" alt="Profile Image" width="50px">
+                        {% else %}
+                            <img class="rounded-circle" src="{{ MEDIA_URL }}images/No_image_available.svg.png" alt="No Available Image" width="50px">
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div>
+                            <strong>{{comment.user}}</strong>
+                            <small>{{comment.get_time_diff}}</small>
+                        </div>
+                        {{ comment.comment }}
+                    </div>
+                </div>
+            {% empty %}
+                <p>No comments</p>
+            {% endfor %}
+
+            <div id="comment_list">
+                <!--Test comments go here-->
+                {{ auction.id|json_script:'auction_id'}}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

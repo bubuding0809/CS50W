@@ -1,0 +1,51 @@
+body {
+    background-color: #B3E5FC;
+}
+
+.profile-card {
+    width: 600px;
+    border: none;
+    border-radius: 10px;
+    background-color: #fff;
+}
+
+.stats {
+    background: #f2f5f8 !important;
+    color: #000 !important;
+}
+.profile-image {
+    width: 60px;
+    height: 60px;
+}
+
+.stat-header {
+    font-size: 10px;
+    color: #a1aab9;
+}
+
+.stat-info {
+    font-weight: 500;
+}
+
+h4 {
+    color: #000;
+}
+
+.cover {
+    object-fit: cover;
+}
+
+.pro-img img{
+    position: absolute;
+    object-fit: cover;
+    width: 128px;
+    height: 128px;
+    left: 0;
+    right: 0;
+    top: -130px;
+    margin: 0 auto;
+}
+
+.little-profile {
+    position: relative;
+}

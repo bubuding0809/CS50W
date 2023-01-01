@@ -1,0 +1,24 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    Encyclopedia
+{% endblock %}
+
+{% block body %}
+    {% if deleteFlag %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Entry: {{ deletedTitle }} was succesfully deleted
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    <h1>All Pages</h1>
+
+    <ul>
+        {% for entry in entries %}
+            <li>
+                <a href="{% url 'entry' entry %}">{{ entry }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}

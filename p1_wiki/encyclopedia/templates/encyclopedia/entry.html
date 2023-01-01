@@ -1,0 +1,29 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block body %}
+    <h1><-{{ title }}-></h1>
+
+    <div class="entry">
+        {% if editFlag %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
+                {{ title }} was <strong>succesfully</strong> edited
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+        <div class="border"> 
+            {{ entry | safe }}
+        </div>
+        <div class="flex rightalign">
+            <a href="{% url 'edit' title %}"><button class="btn btn-light" >edit entry</button></a>
+            <form action="{% url 'delete' title %}" method="post">
+                {% csrf_token %}
+                <button class="btn btn-light" type="submit">delete entry</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
